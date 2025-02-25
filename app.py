@@ -34,8 +34,7 @@ if st.button("Download Video"):
         st.info("Downloading... Please wait.")
         try:
             video_path = download_video(video_url, custom_filename)
-            st.success("Download Complete! Click below (👇)
-            to save the file.")
+            st.success("Download Complete! Click below (👇) to save the file.")
 
             with open(video_path, "rb") as file:
                 st.download_button(
