@@ -24,7 +24,7 @@ def download_video(url, filename):
 
     return video_path  
 
-st.title("~ ANY Video Downloader")
+st.title("~ ANY Video Downloader (This does not support carousels ❌)")
 
 video_url = st.text_input("Enter the video URL:")
 custom_filename = st.text_input("Enter the desired filename (without extension):")
