@@ -5,14 +5,16 @@ import tempfile
 import re
 
 def sanitize_filename(filename):
-    return re.sub(r'[^a-zA-Z0-9-_ ]', '', filename)
+    """Removes special characters and replaces spaces with underscores."""
+    return re.sub(r'[^a-zA-Z0-9-_]', '', filename).replace(" ", "_")
 
 def download_video(url):
     temp_dir = tempfile.gettempdir()
-    
+    video_path = os.path.join(temp_dir, "downloaded_video.mp4")  # Fixed filename
+
     ydl_opts = {
         'format': 'best',
-        'outtmpl': os.path.join(temp_dir, "%(title)s.%(ext)s"),  
+        'outtmpl': video_path,
         'noplaylist': True,
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -22,11 +24,9 @@ def download_video(url):
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        sanitized_title = sanitize_filename(info['title'])
-        video_path = os.path.join(temp_dir, f"{sanitized_title}.{info['ext']}")
+        ydl.download([url])
 
-    return video_path  
+    return video_path
 
 st.title("~ ANY Video Downloader (This does not support carousels ❌)")
 
@@ -43,7 +43,7 @@ if st.button("Download Video"):
                 st.download_button(
                     label="Download Video",
                     data=file,
-                    file_name=os.path.basename(video_path),
+                    file_name="video.mp4",
                     mime="video/mp4"
                 )
         except Exception as e:
