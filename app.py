@@ -2,6 +2,10 @@ import streamlit as st
 import yt_dlp
 import os
 import tempfile
+import re
+
+def sanitize_filename(filename):
+    return re.sub(r'[^a-zA-Z0-9-_ ]', '', filename)
 
 def download_video(url):
     temp_dir = tempfile.gettempdir()
@@ -19,7 +23,8 @@ def download_video(url):
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        video_path = os.path.join(temp_dir, f"{info['title']}.{info['ext']}")
+        sanitized_title = sanitize_filename(info['title'])
+        video_path = os.path.join(temp_dir, f"{sanitized_title}.{info['ext']}")
 
     return video_path  
 
