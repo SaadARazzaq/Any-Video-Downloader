@@ -14,7 +14,7 @@ def download_video(url):
         'format': 'best',
         'outtmpl': os.path.join(temp_dir, "%(title)s.%(ext)s"),  
         'noplaylist': True,
-        'force_overwrites': True,  # Forces re-download if file exists
+        'force_overwrites': True,  # Ensures re-download
         'no_cache_dir': True,  # Avoids caching issues
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -25,11 +25,9 @@ def download_video(url):
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        sanitized_title = sanitize_filename(info['title'])
-        video_path = os.path.join(temp_dir, f"{sanitized_title}.{info['ext']}")
+        video_path = info.get("filepath", None)  # Extract actual downloaded file path
 
-        # Ensure file exists before returning path
-        if not os.path.exists(video_path):
+        if not video_path or not os.path.exists(video_path):
             raise FileNotFoundError(f"Downloaded file not found: {video_path}")
 
     return video_path  
