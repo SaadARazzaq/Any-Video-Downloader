@@ -12,7 +12,7 @@ def download_video(url):
     
     ydl_opts = {
         'format': 'best',
-        'outtmpl': os.path.join(temp_dir, "%(title)s.%(ext)s"),  
+        'outtmpl': os.path.join(temp_dir, "%(title)s.%(ext)s"),
         'noplaylist': True,
         'force_overwrites': True,  # Ensures re-download
         'no_cache_dir': True,  # Avoids caching issues
