@@ -5,17 +5,17 @@ import tempfile
 import re
 
 def sanitize_filename(filename):
-    """Removes special characters and replaces spaces with underscores."""
-    return re.sub(r'[^a-zA-Z0-9-_]', '', filename).replace(" ", "_")
+    return re.sub(r'[^a-zA-Z0-9-_ ]', '', filename).strip()
 
 def download_video(url):
     temp_dir = tempfile.gettempdir()
-    video_path = os.path.join(temp_dir, "downloaded_video.mp4")  # Fixed filename
-
+    
     ydl_opts = {
         'format': 'best',
-        'outtmpl': video_path,
+        'outtmpl': os.path.join(temp_dir, "%(title)s.%(ext)s"),  
         'noplaylist': True,
+        'force_overwrites': True,  # Forces re-download if file exists
+        'no_cache_dir': True,  # Avoids caching issues
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -24,9 +24,15 @@ def download_video(url):
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+        info = ydl.extract_info(url, download=True)
+        sanitized_title = sanitize_filename(info['title'])
+        video_path = os.path.join(temp_dir, f"{sanitized_title}.{info['ext']}")
 
-    return video_path
+        # Ensure file exists before returning path
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(f"Downloaded file not found: {video_path}")
+
+    return video_path  
 
 st.title("~ ANY Video Downloader (This does not support carousels ❌)")
 
@@ -43,7 +49,7 @@ if st.button("Download Video"):
                 st.download_button(
                     label="Download Video",
                     data=file,
-                    file_name="video.mp4",
+                    file_name=os.path.basename(video_path),
                     mime="video/mp4"
                 )
         except Exception as e:
