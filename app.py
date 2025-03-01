@@ -10,12 +10,18 @@ def sanitize_filename(filename):
 def download_video(url):
     temp_dir = tempfile.gettempdir()
     
+    with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+        info = ydl.extract_info(url, download=False)
+        sanitized_title = sanitize_filename(info['title'])
+        video_path = os.path.join(temp_dir, f"{sanitized_title}.{info['ext']}")
+
+        if os.path.exists(video_path):
+            return video_path  # Skip download if file exists
+
     ydl_opts = {
         'format': 'best',
-        'outtmpl': os.path.join(temp_dir, "%(title)s.%(ext)s"),
+        'outtmpl': video_path,  
         'noplaylist': True,
-        'force_overwrites': True,  # Ensures re-download
-        'no_cache_dir': True,  # Avoids caching issues
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -24,13 +30,10 @@ def download_video(url):
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        video_path = info.get("filepath", None)  # Extract actual downloaded file path
+        ydl.download([url])
 
-        if not video_path or not os.path.exists(video_path):
-            raise FileNotFoundError(f"Downloaded file not found: {video_path}")
+    return video_path
 
-    return video_path  
 
 st.title("~ ANY Video Downloader (This does not support carousels ❌)")
 
